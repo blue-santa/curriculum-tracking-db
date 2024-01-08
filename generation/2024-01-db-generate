@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# Database connection parameters
+DB_NAME="teaching_db"
+DB_USER="postgres"
+DB_PASSWORD=`cat ../.dbpass`
+DB_HOST="localhost"
+
+# Function to check and create table
+check_and_create_table() {
+    local table=$1
+    local create_query=$2
+    echo "Checking if table '$table' exists..."
+    table_exists=$(psql -t -h $DB_HOST -U $DB_USER -d $DB_NAME -c "SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = '$table');")
+    if [ "$table_exists" = " t" ]; then
+        echo "Table '$table' already exists."
+    else
+        echo "Creating table '$table'..."
+        psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "$create_query"
+    fi
+}
+
+# Function to check and add column to a table
+check_and_add_column() {
+    local table=$1
+    local column=$2
+    local column_type=$3
+    echo "Checking if column '$column' exists in table '$table'..."
+    column_exists=$(psql -t -h $DB_HOST -U $DB_USER -d $DB_NAME -c "SELECT EXISTS (SELECT FROM information_schema.columns WHERE table_schema = 'public' AND table_name = '$table' AND column_name = '$column');")
+    if [ "$column_exists" = " t" ]; then
+        echo "Column '$column' already exists in table '$table'."
+    else
+        echo "Adding column '$column' to table '$table'..."
+        psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "ALTER TABLE $table ADD COLUMN $column $column_type;"
+    fi
+}
+
+# Define your table and columns here
+
+# Table: lessons
+# Columns: lesson_id, num, subnumber, next_lesson
+check_and_create_table "lessons" "CREATE TABLE lessons (lesson_id SERIAL PRIMARY KEY);"
+check_and_add_column "num" "name" "INTEGER"
+check_and_add_column "students" "grade" "INTEGER"
+
+# Add more tables and columns as needed
+
+echo "Database setup complete."
+
