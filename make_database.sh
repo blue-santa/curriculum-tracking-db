@@ -7,8 +7,8 @@ sudo -su postgres << EOF
 
 psql << SQL
 
-ALTER USER postgres PASSWORD '$pass';
-CREATE DATABASE test_cpp;
+ALTER USER curriculum_tracking_usr PASSWORD '$pass';
+CREATE DATABASE curriculum_tracking_db;
 
 SQL
 
